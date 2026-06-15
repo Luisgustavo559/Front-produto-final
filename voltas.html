@@ -247,16 +247,25 @@
   <canvas id="sakura-canvas"></canvas>
   
   <a href="menu.html" class="voltar-topo">← Voltar</a>
+  <a href="menu.html" class="voltar-topo" style="left:auto; right:40px; opacity:0.85">🏁 Menu</a>
 
   <div class="centro">
     <div class="card-registro">
       <h2>Registrar Volta</h2>
       
       <div class="inputs-row">
-        <input id="corredor-id" type="number" placeholder="ID do corredor">
+        <select id="corredor-id" style="padding:15px 20px; width:100%; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); border-radius:12px; color:#fff; font-family: 'Montserrat', sans-serif; font-size: 1rem; outline:none;">
+          <option value="">Selecione o corredor</option>
+        </select>
         <input id="data-volta" type="datetime-local" placeholder="Data da volta">
+        <select id="pista-volta" style="padding:15px 20px; width:100%; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); border-radius:12px; color:#fff; font-family: 'Montserrat', sans-serif; font-size: 1rem; outline:none;">
+          <option value="">Selecione a pista</option>
+          <option value="Pista 1">Pista 1</option>
+          <option value="Pista 2">Pista 2</option>
+          <option value="Pista 3">Pista 3</option>
+        </select>
         <input id="tempo-volta" type="number" step="0.001" placeholder="Tempo (s)">
-      </div>
+</div>
 
       <button class="btn" onclick="registrarVolta()">Registrar</button>
     </div>
@@ -280,13 +289,29 @@
   <script>
     const API_URL = 'http://localhost:3000';
 
+    async function carregarCorredores(){
+      const select = document.getElementById('corredor-id');
+      const response = await fetch(`${API_URL}/corredores`);
+      const data = await response.json();
+      if(!response.ok) throw new Error(data.error || 'Erro ao buscar corredores');
+
+      select.innerHTML = '<option value="">Selecione o corredor</option>';
+      data.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.id;
+        opt.textContent = `${c.nome} (${c.turma}) - ${c.unidade}`;
+        select.appendChild(opt);
+      });
+    }
+
     async function registrarVolta() {
       const corredorId = document.getElementById('corredor-id').value;
       const dataVolta = document.getElementById('data-volta').value;
       const tempo = document.getElementById('tempo-volta').value;
+      const pista = document.getElementById('pista-volta').value.trim();
 
-      if (!corredorId || !tempo) {
-        alert('Preencha o ID do corredor e o tempo da volta.');
+      if (!corredorId || !tempo || !pista) {
+        alert('Selecione o corredor e preencha o tempo da volta.');
         return;
       }
 
@@ -319,6 +344,22 @@
         alert(error.message);
       }
     }
+
+    // default: agora (melhor UX)
+    (function setNow(){
+      const el = document.getElementById('data-volta');
+      if(!el) return;
+      const d = new Date();
+      const pad = n => String(n).padStart(2,'0');
+      const formatted = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+      el.value = formatted;
+    })();
+
+    // carregar select
+    carregarCorredores().catch(err => {
+      console.error(err);
+      alert(err.message);
+    });
 
     /* =======================================================
        CANVAS 2D - PÉTALAS CAINDO PARA MANTER A IMERSÃO

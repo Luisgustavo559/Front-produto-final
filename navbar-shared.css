@@ -1,0 +1,101 @@
+/* Shared sidebar/navbar styles for Sakura Racing */
+:root{
+  --sakura:#ff1493;
+  --sakura-dim: rgba(255,20,147,0.15);
+  --sakura-glow: rgba(255,20,147,0.35);
+  --border-pink: rgba(255,20,147,0.2);
+  --text-mid:#999;
+  --text:#f0f0f0;
+  --danger:#ff3a3a;
+  --bg-side: rgba(6,6,8,0.95);
+  --ease: cubic-bezier(0.16,1,0.3,1);
+  --t: all 0.45s var(--ease);
+}
+
+/* sidebar */
+.navbar{
+  position:fixed;
+  top:0;
+  right:-320px;
+  width:320px;
+  height:100%;
+  background:var(--bg-side);
+  backdrop-filter:blur(30px);
+  -webkit-backdrop-filter:blur(30px);
+  border-left:1px solid var(--border-pink);
+  z-index:1000;
+  padding:100px 40px 40px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  transition:right 0.5s var(--ease);
+}
+.navbar::before{
+  content:'';
+  position:absolute;
+  top:0;
+  left:0;
+  width:1px;
+  height:100%;
+  background:linear-gradient(to bottom,transparent,var(--sakura),transparent);
+  opacity:0.5;
+}
+.navbar.open{right:0}
+
+.nav-link{
+  text-decoration:none;
+  color:var(--text-mid);
+  font-size:0.9rem;
+  font-weight:600;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+  padding:14px 16px;
+  border-radius:10px;
+  transition:var(--t);
+  display:flex;
+  align-items:center;
+  gap:12px;
+  position:relative;
+  overflow:hidden;
+}
+.nav-link::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:var(--sakura-dim);
+  transform:translateX(-100%);
+  transition:transform 0.4s var(--ease);
+  border-radius:10px;
+}
+.nav-link:hover{color:var(--text)}
+.nav-link:hover::before{transform:translateX(0)}
+.nav-link .icon{font-size:14px;opacity:.7}
+.nav-sep{height:1px;background:rgba(255,255,255,0.08);margin:10px 0}
+.nav-danger{color:var(--danger)!important;margin-top:auto}
+
+/* hamburger (used as-is by pages) */
+.menu-btn{
+  position:relative;
+  z-index:1001;
+  width:38px;
+  height:38px;
+  cursor:pointer;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  gap:7px;
+  background:none;
+  border:none;
+}
+.menu-btn b{
+  display:block;
+  width:100%;
+  height:1.5px;
+  background:var(--text);
+  transition:var(--t);
+  transform-origin:center;
+}
+.menu-btn.active b:nth-child(1){transform:translateY(8.5px) rotate(45deg)}
+.menu-btn.active b:nth-child(2){opacity:0;transform:scaleX(0)}
+.menu-btn.active b:nth-child(3){transform:translateY(-8.5px) rotate(-45deg)}
+

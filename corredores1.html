@@ -548,6 +548,10 @@ body{
     <span class="icon">＋</span> Novo Corredor
   </a>
   <div class="nav-sep"></div>
+  <a href="menu.html" class="nav-link" onclick="closeNav()">
+    <span class="icon">←</span> Voltar ao Menu
+  </a>
+  <div class="nav-sep"></div>
   <a href="index.html" class="nav-link nav-danger">
     <span class="icon">⏻</span> Sair do Sistema
   </a>
@@ -583,9 +587,11 @@ body{
     <p class="modal-title" id="modal-title">Nova Unidade</p>
     <p class="modal-sub">REGISTRO DE UNIDADE DE CORRIDA</p>
     <div class="form-group">
-      <label class="form-label" for="input-nome">ID da Unidade</label>
-      <input class="form-input" type="text" id="input-nome" placeholder="Ex: RX-7 Phantom" autocomplete="off">
-      <label class="form-label" for="input-turma">Equipe</label>
+      <label class="form-label" for="input-unidade">ID da Unidade</label>
+      <input class="form-input" type="text" id="input-unidade" placeholder="Ex: RX-7 Phantom" autocomplete="off">
+      <label class="form-label" for="input-nome">Nome da pessoa</label>
+      <input class="form-input" type="text" id="input-nome" placeholder="Ex: João Silva" autocomplete="off">
+      <label class="form-label" for="input-turma">Equipe/Turma</label>
       <input class="form-input" type="text" id="input-turma" placeholder="Ex: Ferrari" autocomplete="off">
     </div>
     <div class="form-group">
@@ -695,10 +701,11 @@ function closeNav(){
 /* ── MODAL ── */
 function openModal(){
   document.getElementById('modal').classList.add('show');
-  document.getElementById('input-nome').focus();
+  document.getElementById('input-unidade').focus();
 }
 function closeModal(){
   document.getElementById('modal').classList.remove('show');
+  document.getElementById('input-unidade').value='';
   document.getElementById('input-nome').value='';
   document.getElementById('input-turma').value='';
   document.getElementById('input-status').value='ativo';
@@ -715,20 +722,22 @@ document.getElementById('input-nome').addEventListener('keydown',e=>{
 
 /* ── CRUD ── */
 async function save(){
+  const unidade = document.getElementById('input-unidade').value.trim();
   const nome = document.getElementById('input-nome').value.trim();
   const turma = document.getElementById('input-turma').value.trim();
+  if(!unidade) return shakeFocus('input-unidade');
   if(!nome) return shakeFocus('input-nome');
   if(!turma) return shakeFocus('input-turma');
   try {
     const response = await fetch(`${API_URL}/corredores/create`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nome, turma })
+      body: JSON.stringify({ unidade, nome, turma })
     });
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || 'Erro ao registrar corredor.');
     closeModal();
-    showToast('Unidade "'+escapeHtml(nome)+'" registrada');
+    showToast('Unidade "'+escapeHtml(unidade)+'" registrada');
     loadCorredores();
   } catch (error) {
     showToast(error.message);
