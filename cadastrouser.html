@@ -181,16 +181,47 @@
       <div class="form">
         <h2>Criar Conta</h2>
     
-        <input type="text" placeholder="Nome">
-        <input type="email" placeholder="Email">
-        <input type="password" placeholder="Senha">
+        <input id="nome" type="text" placeholder="Nome">
+        <input id="email" type="email" placeholder="Email">
+        <input id="senha" type="password" placeholder="Senha">
      
-        <button onclick="window.location.href='menu.html'">Cadastrar</button>
+        <button onclick="createUser()">Cadastrar</button>
       </div>
     </div>
   </div>
 
   <script>
+    const API_URL = 'http://localhost:3000';
+
+    async function createUser() {
+      const nome = document.getElementById('nome').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const senha = document.getElementById('senha').value;
+
+      if (!nome || !email || !senha) {
+        alert('Preencha nome, email e senha.');
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_URL}/users/create`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nome, email, senha })
+        });
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Erro ao cadastrar usuario.');
+        }
+
+        alert('Cadastro realizado com sucesso.');
+        window.location.href = 'login.html';
+      } catch (error) {
+        alert(error.message);
+      }
+    }
+
     /* =======================================================
        CANVAS 2D - PÉTALAS CAINDO PARA MANTER A IMERSÃO
        ======================================================= */

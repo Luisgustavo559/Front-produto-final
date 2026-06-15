@@ -253,13 +253,12 @@
       <h2>Registrar Volta</h2>
       
       <div class="inputs-row">
-        <input type="text" placeholder="ID do corredor">
-        <input type="text" placeholder="Data inicio">
-        <input type="text" placeholder="data fim">
-        <input type="text" placeholder="Tempo (s)">
+        <input id="corredor-id" type="number" placeholder="ID do corredor">
+        <input id="data-volta" type="datetime-local" placeholder="Data da volta">
+        <input id="tempo-volta" type="number" step="0.001" placeholder="Tempo (s)">
       </div>
 
-      <a class="btn">Registrar</a>
+      <button class="btn" onclick="registrarVolta()">Registrar</button>
     </div>
   </div>
   <nav class="navbar" id="navbar" aria-label="Navegação principal">
@@ -279,6 +278,48 @@
   </nav>
 
   <script>
+    const API_URL = 'http://localhost:3000';
+
+    async function registrarVolta() {
+      const corredorId = document.getElementById('corredor-id').value;
+      const dataVolta = document.getElementById('data-volta').value;
+      const tempo = document.getElementById('tempo-volta').value;
+
+      if (!corredorId || !tempo) {
+        alert('Preencha o ID do corredor e o tempo da volta.');
+        return;
+      }
+
+      try {
+        const body = {
+          corredor_id: Number(corredorId),
+          tempo: Number(tempo)
+        };
+
+        if (dataVolta) {
+          body.data = dataVolta.replace('T', ' ');
+        }
+
+        const response = await fetch(`${API_URL}/voltas/post`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Erro ao registrar volta.');
+        }
+
+        alert('Volta registrada com sucesso.');
+        document.getElementById('corredor-id').value = '';
+        document.getElementById('data-volta').value = '';
+        document.getElementById('tempo-volta').value = '';
+      } catch (error) {
+        alert(error.message);
+      }
+    }
+
     /* =======================================================
        CANVAS 2D - PÉTALAS CAINDO PARA MANTER A IMERSÃO
        ======================================================= */

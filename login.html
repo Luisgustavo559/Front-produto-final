@@ -207,13 +207,44 @@
   <div class="container">
     <div class="form">
       <h2>Login</h2>
-      <input type="text" placeholder="Email">
-      <input type="password" placeholder="Senha">
-      <button onclick="window.location.href='menu.html'">Entrar</button>
+      <input id="email" type="email" placeholder="Email">
+      <input id="senha" type="password" placeholder="Senha">
+      <button onclick="loginUser()">Entrar</button>
     </div>
   </div>
 
   <script>
+    const API_URL = 'http://localhost:3000';
+
+    async function loginUser() {
+      const email = document.getElementById('email').value.trim();
+      const senha = document.getElementById('senha').value;
+
+      if (!email || !senha) {
+        alert('Preencha email e senha.');
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_URL}/users/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, senha })
+        });
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Erro ao fazer login.');
+        }
+
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        window.location.href = 'menu.html';
+      } catch (error) {
+        alert(error.message);
+      }
+    }
+
     /* =======================================================
        CANVAS 2D - PÉTALAS CAINDO PARA MANTER A IMERSÃO
        ======================================================= */

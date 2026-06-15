@@ -585,8 +585,8 @@ body{
     <div class="form-group">
       <label class="form-label" for="input-nome">ID da Unidade</label>
       <input class="form-input" type="text" id="input-nome" placeholder="Ex: RX-7 Phantom" autocomplete="off">
-      <label class="form-label" for="input-nome">Equipe</label>
-      <input class="form-input" type="text" id="input-nome" placeholder="Ex: Ferrari" autocomplete="off">
+      <label class="form-label" for="input-turma">Equipe</label>
+      <input class="form-input" type="text" id="input-turma" placeholder="Ex: Ferrari" autocomplete="off">
     </div>
     <div class="form-group">
       <label class="form-label" for="input-status">Status Operacional</label>
@@ -610,11 +610,21 @@ body{
 
 <script>
 /* ── STATE ── */
-let db = JSON.parse(localStorage.getItem('sakura_db')) || [
-  {id:1,nome:'A-01',status:'ativo'},
-  {id:2,nome:'A-02',status:'manutencao'}
-];
+const API_URL = 'http://localhost:3000';
+let db = [];
 let currentFilter = 'all';
+
+async function loadCorredores(){
+  try {
+    const response = await fetch(`${API_URL}/corredores`);
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Erro ao buscar corredores.');
+    db = data.map(item => ({ ...item, status: 'ativo' }));
+    render();
+  } catch (error) {
+    showToast(error.message);
+  }
+}
 
 /* ── RENDER ── */
 function render(){
@@ -633,7 +643,7 @@ function render(){
     const isAtivo = item.status==='ativo';
     card.innerHTML=`
       <div class="card-glow"></div>
-      <p class="card-label">Genesis Unit</p>
+      <p class="card-label">${escapeHtml(item.turma || 'Sem equipe')}</p>
       <h3 class="card-name">${escapeHtml(item.nome)}</h3>
       <div class="card-divider"></div>
       <div class="status-row">
@@ -656,7 +666,6 @@ function updateStats(){
 }
 
 function persist(){
-  localStorage.setItem('sakura_db', JSON.stringify(db));
 }
 
 function escapeHtml(s){
@@ -691,6 +700,7 @@ function openModal(){
 function closeModal(){
   document.getElementById('modal').classList.remove('show');
   document.getElementById('input-nome').value='';
+  document.getElementById('input-turma').value='';
   document.getElementById('input-status').value='ativo';
 }
 document.getElementById('modal').addEventListener('click',function(e){
@@ -704,26 +714,42 @@ document.getElementById('input-nome').addEventListener('keydown',e=>{
 });
 
 /* ── CRUD ── */
-function save(){
+async function save(){
   const nome = document.getElementById('input-nome').value.trim();
-  const status = document.getElementById('input-status').value;
+  const turma = document.getElementById('input-turma').value.trim();
   if(!nome) return shakeFocus('input-nome');
-  db.push({id:Date.now(),nome,status});
-  closeModal();
-  render();
-  showToast('Unidade "'+escapeHtml(nome)+'" registrada');
+  if(!turma) return shakeFocus('input-turma');
+  try {
+    const response = await fetch(`${API_URL}/corredores/create`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nome, turma })
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Erro ao registrar corredor.');
+    closeModal();
+    showToast('Unidade "'+escapeHtml(nome)+'" registrada');
+    loadCorredores();
+  } catch (error) {
+    showToast(error.message);
+  }
 }
 
-function remove(id){
+async function remove(id){
   const card = document.getElementById(`card-${id}`);
   if(!card) return;
   card.style.transition = 'all 0.35s cubic-bezier(0.4,0,1,1)';
   card.style.opacity = '0';
   card.style.transform = 'scale(0.85) translateY(10px)';
-  setTimeout(()=>{
-    db = db.filter(i=>i.id!==id);
-    render();
-  }, 350);
+  try {
+    const response = await fetch(`${API_URL}/corredores/delete/${id}`, { method: 'DELETE' });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Erro ao remover corredor.');
+    setTimeout(loadCorredores, 350);
+  } catch (error) {
+    showToast(error.message);
+    loadCorredores();
+  }
 }
 
 function shakeFocus(id){
@@ -746,7 +772,7 @@ function showToast(msg){
 }
 
 /* ── INIT ── */
-render();
+loadCorredores();
 </script>
 
 <script>

@@ -257,36 +257,9 @@
                       <th>Pontos</th>
                     </tr>
                   </thead>
-                  <tbody>
-                    <tr class="top-three">
-                      <td><span class="pos-badge">1</span></td>
-                      <td><strong>Akira Tanaka</strong></td>
-                      <td>Sakura Racing</td>
-                      <td class="points">215</td>
-                    </tr>
-                    <tr class="top-three">
-                      <td><span class="pos-badge">2</span></td>
-                      <td><strong>Kenji Sato</strong></td>
-                      <td>Sakura Racing</td>
-                      <td class="points">198</td>
-                    </tr>
-                    <tr class="top-three">
-                      <td><span class="pos-badge">3</span></td>
-                      <td><strong>Yumi Nara</strong></td>
-                      <td>TechSolutions</td>
-                      <td class="points">185</td>
-                    </tr>
+                  <tbody id="ranking-body">
                     <tr>
-                      <td>4</td>
-                      <td>Lucas Silva</td>
-                      <td>Cryptonagec</td>
-                      <td class="points">160</td>
-                    </tr>
-                    <tr>
-                      <td>5</td>
-                      <td>Hiroshi Ono</td>
-                      <td>Sakura Racing</td>
-                      <td class="points">142</td>
+                      <td colspan="4">Carregando ranking...</td>
                     </tr>
                   </tbody>
                 </table>
@@ -301,6 +274,47 @@
   </div>
 
   <script>
+    const API_URL = 'http://localhost:3000';
+
+    function formatTempo(tempo) {
+      if (tempo === null || tempo === undefined) return '-';
+      return `${Number(tempo).toFixed(3)}s`;
+    }
+
+    async function carregarRanking() {
+      const tbody = document.getElementById('ranking-body');
+
+      try {
+        const response = await fetch(`${API_URL}/corredores/ranking/melhores-tempos`);
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Erro ao carregar ranking.');
+
+        if (!data.length) {
+          tbody.innerHTML = '<tr><td colspan="4">Nenhum corredor cadastrado.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = data.map((item, index) => {
+          const pos = index + 1;
+          const posHtml = pos <= 3 ? `<span class="pos-badge">${pos}</span>` : pos;
+          const rowClass = pos <= 3 ? ' class="top-three"' : '';
+
+          return `
+            <tr${rowClass}>
+              <td>${posHtml}</td>
+              <td><strong>${item.nome}</strong></td>
+              <td>${item.turma}</td>
+              <td class="points">${formatTempo(item.melhor_tempo)}</td>
+            </tr>
+          `;
+        }).join('');
+      } catch (error) {
+        tbody.innerHTML = `<tr><td colspan="4">${error.message}</td></tr>`;
+      }
+    }
+
+    carregarRanking();
+
     /* =======================================================
        CANVAS 2D - PÉTALAS CAINDO PARA MANTER A IMERSÃO
        ======================================================= */
