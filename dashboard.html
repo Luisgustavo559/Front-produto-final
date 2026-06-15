@@ -272,11 +272,73 @@
   .lap-highlight {
     background: #161616
   }
+
+  .voltar-menu{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    text-decoration:none;
+    color:#fff;
+    font-family: 'Share Tech Mono', monospace;
+    font-weight:700;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    border:1px solid rgba(255,20,147,0.25);
+    border-radius:12px;
+    padding:10px 14px;
+    background:rgba(255,20,147,0.06);
+    box-shadow:0 0 20px rgba(255,20,147,0.08);
+    margin:0 0 16px 0;
+    transition: all 0.3s ease;
+  }
+
+  .voltar-menu:hover{
+    border-color: rgba(255,20,147,0.55);
+    box-shadow:0 0 30px rgba(255,20,147,0.18);
+    transform: translateY(-2px);
+  }
 </style>
+
 
 <link rel="stylesheet" href="navbar-shared.css">
 <script src="_shared-navbar.js"></script>
-<div class="dash">
+
+  <button class="menu-btn" id="menu-btn" onclick="toggleNav()" aria-label="Menu" style="position:fixed; top:18px; right:18px; z-index:1002;">
+    <b></b><b></b><b></b>
+  </button>
+
+  <!-- padrão sidebar usado no resto do site -->
+  <nav class="navbar" id="navbar" aria-label="Navegação principal">
+    <a href="dashboard.html" class="nav-link" onclick="closeNav()">
+      <span class="icon">◈</span> Dashboard
+    </a>
+    <a href="ranking.html" class="nav-link">
+      <span class="icon">◉</span> Ranking Global
+    </a>
+    <a href="#" class="nav-link" onclick="openModal();closeNav()">
+      <span class="icon">＋</span> Novo Corredor
+    </a>
+    <div class="nav-sep"></div>
+    <a href="menu.html" class="nav-link" onclick="closeNav()">
+      <span class="icon">←</span> Voltar
+    </a>
+    <div class="nav-sep"></div>
+    <a href="index.html" class="nav-link nav-danger">
+      <span class="icon">⏻</span> Sair do Sistema
+    </a>
+  </nav>
+
+  <button class="menu-btn" id="menu-btn" onclick="toggleNav()" aria-label="Menu">
+    <b></b><b></b><b></b>
+  </button>
+
+  <div class="dash">
+  <a href="menu.html" class="voltar-menu" aria-label="Voltar para o menu">
+    <span style="font-size:18px;line-height:1;">←</span>
+    <span>Voltar ao Menu</span>
+  </a>
+
+
   <h2 class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">Dashboard dinâmico - Voltas por corredor</h2>
 
   <div class="header">
@@ -284,51 +346,15 @@
     <span class="session"><span class="dot"></span>SESSÃO AO VIVO &nbsp;|&nbsp; CORRIDA PRINCIPAL</span>
   </div>
 
-  <div class="cards">
-    <div class="card">
-      <div class="card-label">Última Volta</div>
-      <div class="card-value" id="lastLap">1:02.847</div>
-      <div class="card-sub" id="lastDelta">+0.312 vs melhor</div>
+  <div class="mid" style="grid-template-columns: 1fr 420px; align-items: start;">
+    <div class="table-wrap" style="padding:0; overflow:hidden;">
+      <div class="chart-title" style="padding:14px 14px 0 14px; margin-bottom:8px">Melhor volta por pista</div>
+      <div id="bestByTrack" style="padding:14px; display:flex; flex-direction:column; gap:10px;"></div>
     </div>
-    <div class="card green">
-      <div class="card-label">Volta Mais Rápida</div>
-      <div class="card-value green" id="fastLap">1:02.535</div>
-      <div class="card-sub" id="fastLapNum">Volta 6 de 12</div>
-    </div>
-    <div class="card yellow">
-      <div class="card-label">Distância ao P2</div>
-      <div class="card-value yellow" id="gapP2">+2.841s</div>
-      <div class="card-sub" id="p2driver">vs. DRIVER 7</div>
-    </div>
-    <div class="card blue">
-      <div class="card-label">Voltas Restantes</div>
-      <div class="card-value" id="lapsLeft" style="color:#00b4d8">6 / 12</div>
-      <div class="card-sub">50% concluído</div>
-    </div>
-  </div>
 
-  <div class="mid">
-    <div class="chart-wrap">
-      <div class="chart-title">Evolução de Tempos por Volta</div>
-      <div style="position:relative;width:100%;height:220px">
-        <canvas id="lapChart" role="img"
-          aria-label="Gráfico de linha mostrando evolução dos tempos por volta ao longo da corrida">Tempos por volta do
-          kart 1</canvas>
-      </div>
-    </div>
-    <div class="table-wrap">
-      <div class="chart-title" style="margin-bottom:8px">Registro de Voltas</div>
-      <table>
-        <thead>
-          <tr>
-            <th class="pos">#</th>
-            <th>TEMPO</th>
-            <th>DELTA</th>
-            <th>SETORES</th>
-          </tr>
-        </thead>
-        <tbody id="lapTable"></tbody>
-      </table>
+    <div class="table-wrap" style="padding:0; overflow:hidden;">
+      <div class="chart-title" style="padding:14px 14px 8px 14px; margin-bottom:0">Voltas por corredor (todas + destaque da melhor)</div>
+      <div id="lapsByDriver" style="padding:0 10px 14px 10px; display:flex; flex-direction:column; gap:14px;"></div>
     </div>
   </div>
 
@@ -338,112 +364,130 @@
   </footer>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
-  const laps = [
-    { lap: 1, time: 64.912, s1: 21.3, s2: 22.1, s3: 21.5 },
-    { lap: 2, time: 63.841, s1: 20.9, s2: 21.8, s3: 21.1 },
-    { lap: 3, time: 63.540, s1: 20.7, s2: 21.6, s3: 21.2 },
-    { lap: 4, time: 63.210, s1: 20.5, s2: 21.4, s3: 21.3 },
-    { lap: 5, time: 62.980, s1: 20.4, s2: 21.2, s3: 21.4 },
-    { lap: 6, time: 62.535, s1: 20.1, s2: 21.0, s3: 21.4 },
-    { lap: 7, time: 62.847, s1: 20.2, s2: 21.3, s3: 21.3 },
-  ];
+  const API_URL = 'http://localhost:3000';
 
-  const bestTime = Math.min(...laps.map(l => l.time));
-  const bestS1 = Math.min(...laps.map(l => l.s1));
-  const bestS2 = Math.min(...laps.map(l => l.s2));
-  const bestS3 = Math.min(...laps.map(l => l.s3));
-
-  function fmt(t) {
-    const m = Math.floor(t / 60);
-    const s = (t % 60).toFixed(3).padStart(6, '0');
-    return m + ':' + s;
+  function fmtTempo(t) {
+    if (t === null || t === undefined || t === '') return '-';
+    const v = Number(t);
+    if (Number.isNaN(v)) return '-';
+    const m = Math.floor(v / 60);
+    const s = (v % 60).toFixed(3).padStart(6, '0');
+    return `${m}:${s}`;
   }
 
-  const tbody = document.getElementById('lapTable');
-  laps.forEach(l => {
-    const delta = l.time - bestTime;
-    const isBest = delta < 0.001;
-    const tr = document.createElement('tr');
-    if (isBest) tr.className = 'fastest';
-    tr.innerHTML = `
-      <td class="pos">${l.lap}</td>
-      <td>${fmt(l.time)}</td>
-      <td class="${isBest ? '' : 'delta ' + (delta < 0.5 ? 'pos' : 'neg')}">${isBest ? 'MELHOR' : '+' + delta.toFixed(3)}</td>
-      <td>
-        <div class="sector-bar">
-          <div class="s ${l.s1 <= bestS1 ? 'best' : l.s1 < bestS1 + 0.5 ? 'ok' : 'slow'}"></div>
-          <div class="s ${l.s2 <= bestS2 ? 'best' : l.s2 < bestS2 + 0.5 ? 'ok' : 'slow'}"></div>
-          <div class="s ${l.s3 <= bestS3 ? 'best' : l.s3 < bestS3 + 0.5 ? 'ok' : 'slow'}"></div>
-        </div>
-      </td>`;
-    tbody.appendChild(tr);
-  });
+  function fmtData(d) {
+    if (!d) return '';
+    try {
+      const dt = new Date(d);
+      if (Number.isNaN(dt.getTime())) return String(d);
+      const pad = n => String(n).padStart(2, '0');
+      return `${pad(dt.getDate())}/${pad(dt.getMonth() + 1)}/${dt.getFullYear()} ${pad(dt.getHours())}:${pad(dt.getMinutes())}`;
+    } catch {
+      return String(d);
+    }
+  }
 
-  const lapLabels = laps.map(l => 'V' + l.lap);
-  const lapTimes = laps.map(l => +l.time.toFixed(3));
-  const bestIdx = lapTimes.indexOf(Math.min(...lapTimes));
-  const ptColors = lapTimes.map((_, i) => i === bestIdx ? '#2dc653' : '#ff4500');
-  const ptBorders = lapTimes.map((_, i) => i === bestIdx ? '#2dc653' : '#cc3300');
+  function el(tag, className, inner) {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    if (inner !== undefined) node.innerHTML = inner;
+    return node;
+  }
 
-  new Chart(document.getElementById('lapChart'), {
-    type: 'line',
-    data: {
-      labels: lapLabels,
-      datasets: [{
-        label: 'Tempo (s)',
-        data: lapTimes,
-        borderColor: '#ff4500',
-        borderWidth: 2,
-        tension: 0.3,
-        pointBackgroundColor: ptColors,
-        pointBorderColor: ptBorders,
-        pointRadius: 5,
-        pointHoverRadius: 7,
-        fill: true,
-        backgroundColor: 'rgba(255,69,0,0.07)'
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          backgroundColor: '#1a1a1a',
-          borderColor: '#333',
-          borderWidth: 1,
-          titleColor: '#888',
-          bodyColor: '#fff',
-          callbacks: {
-            label: ctx => {
-              const v = ctx.parsed.y;
-              const m = Math.floor(v / 60);
-              const s = (v % 60).toFixed(3).padStart(6, '0');
-              return 'Tempo: ' + m + ':' + s;
-            }
-          }
-        }
-      },
-      scales: {
-        x: {
-          grid: { color: 'rgba(255,255,255,0.04)' },
-          ticks: { color: '#555', font: { family: 'Share Tech Mono', size: 11 } },
-          border: { color: '#222' }
-        },
-        y: {
-          grid: { color: 'rgba(255,255,255,0.04)' },
-          ticks: {
-            color: '#555',
-            font: { family: 'Share Tech Mono', size: 11 },
-            callback: v => { const m = Math.floor(v / 60); const s = (v % 60).toFixed(1).padStart(4, '0'); return m + ':' + s; }
-          },
-          border: { color: '#222' },
-          suggestedMin: 62,
-          suggestedMax: 66
-        }
+  async function loadDashboard() {
+    const res = await fetch(`${API_URL}/voltas/dashboard`);
+    const payload = await res.json();
+    if (!res.ok) throw new Error(payload.error || 'Erro ao carregar dashboard');
+
+    const bestByTrack = document.getElementById('bestByTrack');
+    const lapsByDriver = document.getElementById('lapsByDriver');
+
+    bestByTrack.innerHTML = '';
+    lapsByDriver.innerHTML = '';
+
+    // Melhor volta por pista (grande destaque)
+    if (!payload.melhorPorPista?.length) {
+      bestByTrack.appendChild(el('div', null, 'Nenhuma volta registrada ainda.')); 
+    } else {
+      for (const item of payload.melhorPorPista) {
+        const card = el('div', 'best-track-card', `
+          <div style="font-size:10px; letter-spacing:2px; text-transform:uppercase; color:#666; margin-bottom:6px;">${item.pista}</div>
+          <div style="font-family:Orbitron, sans-serif; font-size:22px; color:#fff;">${fmtTempo(item.tempo)}</div>
+          <div style="margin-top:4px; font-size:11px; color:#ffd60a;">Melhor por: <span style="color:#fff;">${item.corredor_nome}</span></div>
+        `);
+        card.style.background = 'rgba(255,214,10,0.10)';
+        card.style.border = '1px solid rgba(255,214,10,0.35)';
+        card.style.borderRadius = '6px';
+        card.style.padding = '12px 14px';
+        bestByTrack.appendChild(card);
       }
     }
+
+    // Voltas por corredor
+    for (const driver of payload.porCorredor) {
+      const box = el('div', null, '');
+      box.style.background = '#1a1a1a';
+      box.style.border = '1px solid #2a2a2a';
+      box.style.borderRadius = '6px';
+      box.style.padding = '12px 12px';
+
+      const header = el('div', null, `
+        <div style="display:flex; justify-content:space-between; gap:10px; align-items:baseline; margin-bottom:8px;">
+          <div style="font-family: Orbitron, sans-serif; font-size:16px; color:#fff;">${driver.nome}</div>
+          <div style="font-size:11px; color:#666;">${driver.turma || ''}</div>
+        </div>
+      `);
+      box.appendChild(header);
+
+      if (!driver.voltas?.length) {
+        box.appendChild(el('div', null, 'Sem voltas registradas.'));
+        lapsByDriver.appendChild(box);
+        continue;
+      }
+
+      const best = driver.melhorVolta;
+      const highlight = el('div', null, `
+        <div style="background: rgba(255,214,10,0.12); border:1px solid rgba(255,214,10,0.35); border-radius:6px; padding:10px 12px; margin-bottom:10px;">
+          <div style="font-size:10px; letter-spacing:2px; text-transform:uppercase; color:#ffd60a;">MELHOR VOLTA (DESTE CORREDOR)</div>
+          <div style="font-family: Orbitron, sans-serif; font-size:20px; color:#fff; margin-top:2px;">${fmtTempo(best.tempo)}</div>
+          <div style="font-size:11px; color:#ccc; margin-top:2px;">Pista: <span style="color:#fff;">${best.pista || '-'}</span></div>
+        </div>
+      `);
+      box.appendChild(highlight);
+
+      const list = el('div', null, '');
+      list.style.display = 'flex';
+      list.style.flexDirection = 'column';
+      list.style.gap = '8px';
+
+      for (const v of driver.voltas) {
+        const isBest = best && v.volta_id === best.volta_id;
+        const row = el('div', null, `
+          <div style="display:flex; justify-content:space-between; gap:10px;">
+            <div style="min-width:0;">
+              <div style="font-size:12px; color:${isBest ? '#ffd60a' : '#ccc'};">Pista: ${v.pista || '-'}</div>
+              <div style="font-size:10px; color:#666; margin-top:2px;">${fmtData(v.data)}</div>
+            </div>
+            <div style="font-family: Orbitron, sans-serif; font-size:15px; color:${isBest ? '#ffd60a' : '#fff'}; border:${isBest ? '1px solid rgba(255,214,10,0.5)' : '1px solid rgba(255,255,255,0.08)'}; border-radius:6px; padding:8px 10px; background:${isBest ? 'rgba(255,214,10,0.10)' : 'rgba(0,0,0,0.15)'};">
+              ${fmtTempo(v.tempo)}
+              ${isBest ? '<div style="font-size:10px; color:#ffd60a; margin-top:2px;">★ MELHOR</div>' : ''}
+            </div>
+          </div>
+        `);
+        list.appendChild(row);
+      }
+
+      box.appendChild(list);
+      lapsByDriver.appendChild(box);
+    }
+  }
+
+  loadDashboard().catch(err => {
+    console.error(err);
+    const lapsByDriver = document.getElementById('lapsByDriver');
+    const bestByTrack = document.getElementById('bestByTrack');
+    if (bestByTrack) bestByTrack.innerHTML = 'Erro ao carregar dashboard.';
+    if (lapsByDriver) lapsByDriver.innerHTML = err.message || 'Erro';
   });
 </script>

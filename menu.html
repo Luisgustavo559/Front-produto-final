@@ -7,8 +7,11 @@
   <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,200;0,300;0,400;0,600;0,700;1,300&family=Syncopate:wght@400;700&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <link rel="stylesheet" href="navbar-shared.css">
+  <script src="_shared-navbar.js"></script>
 
   <style>
+
     :root {
       --rosa-neon: #ff1493;
       --rosa-claro: #ffb7c5;
@@ -55,117 +58,8 @@
       pointer-events: none;
     }
 
-    /* ─── NAVBAR & MENU LATERAL ─── */
-    .navbar {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      padding: clamp(15px, 3vw, 30px);
-      display: flex;
-      justify-content: flex-end;
-      z-index: 1000;
-      pointer-events: none; 
-    }
+    /* ─── NAVBAR & MENU LATERAL (CSS compartilhado em navbar-shared.css) ─── */
 
-    .menu-btn {
-      background: rgba(10, 10, 12, 0.65);
-      border: 1px solid var(--border-pink);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      width: 55px;
-      height: 55px;
-      border-radius: 14px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      gap: 6px;
-      cursor: pointer;
-      pointer-events: auto;
-      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-      z-index: 1001;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-    }
-
-    .menu-btn:hover {
-      background: rgba(20, 20, 25, 0.85);
-      box-shadow: 0 0 20px rgba(255,20,147,0.3);
-      border-color: var(--rosa-neon);
-      transform: translateY(-2px);
-    }
-
-    .menu-btn span {
-      display: block;
-      width: 26px;
-      height: 2px;
-      background-color: var(--rosa-neon);
-      border-radius: 2px;
-      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-      box-shadow: 0 0 8px rgba(255,20,147,0.5);
-    }
-
-    /* Animação do botão ativo (vira um X) */
-    .menu-btn.active span:nth-child(1) { transform: translateY(8px) rotate(45deg); }
-    .menu-btn.active span:nth-child(2) { opacity: 0; transform: scaleX(0); }
-    .menu-btn.active span:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
-
-    .side-menu {
-      position: fixed;
-      top: 0;
-      right: -320px;
-      width: 320px;
-      height: 100vh;
-      background: rgba(4, 4, 6, 0.85);
-      backdrop-filter: blur(24px) saturate(1.2);
-      -webkit-backdrop-filter: blur(24px) saturate(1.2);
-      border-left: 1px solid var(--border-pink);
-      z-index: 999;
-      display: flex;
-      flex-direction: column;
-      padding: 120px 40px 40px;
-      transition: right 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-      box-shadow: -15px 0 40px rgba(0,0,0,0.8);
-    }
-
-    .side-menu.open {
-      right: 0;
-    }
-
-    .side-menu a {
-      color: #fff;
-      text-decoration: none;
-      font-family: 'Syncopate', sans-serif;
-      font-size: 1.1rem;
-      margin-bottom: 30px; /* Reduzido um pouco para caber mais itens confortavelmente */
-      text-transform: uppercase;
-      letter-spacing: 3px;
-      transition: all 0.3s ease;
-      position: relative;
-      width: fit-content;
-    }
-
-    .side-menu a::after {
-      content: '';
-      position: absolute;
-      bottom: -8px;
-      left: 0;
-      width: 0;
-      height: 1px;
-      background: var(--rosa-neon);
-      transition: width 0.3s ease;
-      box-shadow: 0 0 10px var(--rosa-neon);
-    }
-
-    .side-menu a:hover {
-      color: var(--rosa-neon);
-      text-shadow: 0 0 15px rgba(255,20,147,0.5);
-      transform: translateX(10px);
-    }
-
-    .side-menu a:hover::after {
-      width: 100%;
-    }
 
     /* ─── PÉTALAS CANVAS ─── */
     #sakura-canvas {
@@ -174,6 +68,7 @@
       z-index: -1;
       pointer-events: none;
     }
+
 
     /* ─── HERO ─── */
     .hero {
@@ -519,26 +414,33 @@
   <div class="bg-layer"></div>
   <canvas id="sakura-canvas"></canvas>
 
-  <nav class="navbar">
-    <button class="menu-btn" id="menu-btn" aria-label="Abrir Menu">
-      <span></span>
-      <span></span>
-      <span></span>
-    </button>
-  </nav>
-</div>
-  <div class="side-menu" id="side-menu">
-    <a href="#inicio">Início</a>
-    <a href="corredores1.html">Corredores</a>
-    <a href="dashboard.html">Dashboard</a>
-    <a href="voltas.html">Voltas</a>
-    <a href="#equipe">A Equipe</a>
-    <a href="#uniforme">Uniforme</a>
-    <a href="#carro">A Máquina</a>
-    <a href="index.html"  class="nav-link nav-danger">
-      <span  class="icon">⏻</span> Sair do Sistema
+  <button class="menu-btn" id="menu-btn" onclick="toggleNav()" aria-label="Abrir Menu">
+    <b></b><b></b><b></b>
+  </button>
+
+
+  <nav class="navbar" id="navbar" aria-label="Navegação principal">
+
+    <a href="dashboard.html" class="nav-link" onclick="closeNav()">
+      <span class="icon">◈</span> Dashboard
+    <div class="nav-sep"></div>
+    <a href="voltas.html" class="nav-link" onclick="closeNav()">
+      <span class="icon">＋</span> Cadastrar Voltas
     </a>
-  </div>
+    <div class="nav-sep"></div>
+    <a href="corredores1.html" class="nav-link" onclick="closeNav()">
+      <span class="icon">◉</span> Cadastrar Corredores
+    </a>
+    <div class="nav-sep"></div>
+    <a href="ranking.html" class="nav-link">
+      <span class="icon">◉</span> Ranking Global
+    </a>
+    <div class="nav-sep"></div>
+    <a href="index.html" class="nav-link nav-danger" onclick="closeNav()">
+      <span class="icon">⏻</span> Sair do Sistema
+    </a>
+  </nav>
+
 
   <header class="hero" id="inicio">
     <div id="tree-container"></div>
@@ -651,23 +553,9 @@
   /* ══════════════════════════════════════════════════════════════
      MENU HAMBÚRGUER & NAVEGAÇÃO
   ══════════════════════════════════════════════════════════════ */
-  const menuBtn = document.getElementById('menu-btn');
-  const sideMenu = document.getElementById('side-menu');
-  const menuLinks = sideMenu.querySelectorAll('a');
+  // Sidebar padrão (navbar compartilhada)
+  // O comportamento de abrir/fechar fica no _shared-navbar.js (toggleNav/closeNav).
 
-  // Abrir e fechar o menu ao clicar no botão
-  menuBtn.addEventListener('click', () => {
-    menuBtn.classList.toggle('active');
-    sideMenu.classList.toggle('open');
-  });
-
-  // Fechar o menu ao clicar em um link
-  menuLinks.forEach(link => {
-    link.addEventListener('click', () => {
-      menuBtn.classList.remove('active');
-      sideMenu.classList.remove('open');
-    });
-  });
 
   /* ══════════════════════════════════════════════════════════════
      SCROLL REVEAL

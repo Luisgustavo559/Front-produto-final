@@ -258,12 +258,9 @@
           <option value="">Selecione o corredor</option>
         </select>
         <input id="data-volta" type="datetime-local" placeholder="Data da volta">
-        <select id="pista-volta" style="padding:15px 20px; width:100%; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); border-radius:12px; color:#fff; font-family: 'Montserrat', sans-serif; font-size: 1rem; outline:none;">
-          <option value="">Selecione a pista</option>
-          <option value="Pista 1">Pista 1</option>
-          <option value="Pista 2">Pista 2</option>
-          <option value="Pista 3">Pista 3</option>
-        </select>
+        <input id="pista-volta" type="text" placeholder="Digite a pista (ex: Pista 1)"
+          style="padding:15px 20px; width:100%; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); border-radius:12px; color:#fff; font-family: 'Montserrat', sans-serif; font-size: 1rem; outline:none;">
+
         <input id="tempo-volta" type="number" step="0.001" placeholder="Tempo (s)">
 </div>
 
@@ -318,7 +315,8 @@
       try {
         const body = {
           corredor_id: Number(corredorId),
-          tempo: Number(tempo)
+          tempo: Number(tempo),
+          pista
         };
 
         if (dataVolta) {
